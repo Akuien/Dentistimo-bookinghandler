@@ -1,0 +1,14 @@
+image: node:14-alpine
+
+stages:
+  - build
+
+build-job:
+  stage: build
+  tags:
+    - docker
+  script:
+    - echo  "Start building"
+    - npm install
+    - echo "Build complete."
+

@@ -11,4 +11,3 @@ build-job:
     - echo  "Start building"
     - npm install
     - echo "Build complete."
-

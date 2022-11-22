@@ -18,15 +18,15 @@ build:
     - cd src
     - npm install
 
-test:
-  stage: test
-  tags:
-    - docker
-  services:
-    - name: mvertes/alpine-mongo:latest
-      alias: mongo
-  variables:
-    MONGODB_URI: "mongodb://mongo:27017/serverTestDB"
-  script:
-    - cd src
-    - npm run ci-test
+##test: NOT REQUIRED
+  ##stage: test
+  ##tags:
+    ##- docker
+  ##services:
+    ##- name: mvertes/alpine-mongo:latest
+      ##alias: mongo
+  ##variables:
+    ##MONGODB_URI: "mongodb://mongo:27017/serverTestDB"
+  ##script:
+    ##- cd src
+    ##- npm run ci-test

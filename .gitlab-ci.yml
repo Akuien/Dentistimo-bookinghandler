@@ -7,7 +7,6 @@ cache:
 
 stages:
   - build
-  - test
 
 build:
   stage: build

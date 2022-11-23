@@ -32,7 +32,9 @@ booker.on('message', function (topic, message) {
 
 
 // subscribe to topic 'my/test/topic'
-booker.subscribe('my/test/topic');
+booker.subscribe('my/test/topic1');
+booker.subscribe('my/test/topic2');
 
 // publish message 'Hello' to topic 'my/test/topic'
-booker.publish('my/test/topic', 'Hello');
+booker.publish('my/test/topic3', 'Hello, hope this is the dentist handler');
+booker.publish('my/test/topic4', 'Sup Mr Dentist, I need my tooth out');

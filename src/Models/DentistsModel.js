@@ -15,7 +15,7 @@ const dentistSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        dentists: {
+        numberOfDentists: {
             type: Number,
             required: true
         },

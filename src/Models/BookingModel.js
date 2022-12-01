@@ -2,25 +2,43 @@ const mongoose = require("mongoose");
 
 const bookingSchema = new mongoose.Schema(
     {
-        userSSN: {
-            type: Number,
+        appointments: [{
+            type: Schema.Types.objectId,
+            ref: 'BookingModel'
+        }],
+        description: {  //Brief explanation about the purpose of the appointment
+            type: String,
             required: true,
             unique: true
         },
-        clinic: {
-            type: Number, //mongoose.Schema.Types.ObjectId, ref to dentists model
+        user: {
+            type: String, 
             ref: "UserModel"
         },
-        date: {
+        day: {
+            type: String,
+            required: true,
+
+        },
+        start: {
             type: String,
             required: true,
         },
-        time: {
+        end: {
             type: String,
+            required: true
+        },
+        dentist: {
+            type: String,
+            required: true,
+            ref: "DentistsModel"
+
+        },
+        issuance: {
+            type:String,
             required: true
         }
     },
-    { timestamps: true } // created at and updated at time
 );
 
 module.exports = mongoose.model("BookingModel", bookingSchema);

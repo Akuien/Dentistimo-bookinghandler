@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const bookingSchema = new mongoose.Schema(
     {
         user: {
-            type: String, 
+            required: true,
+            type: mongoose.Types.ObjectId,
             ref: "UserModel"
         },
         day: {
@@ -16,8 +17,8 @@ const bookingSchema = new mongoose.Schema(
             required: true,
         },
         dentist: {
-            type: String,
             required: true,
+            type: mongoose.Types.ObjectId,
             ref: "DentistsModel"
          }/* ,
         issuance: {

@@ -1,6 +1,6 @@
 let Dentist = require("../models/DentistsModel");
 const Booking = require("../models/BookingModel");
-const BookingModel = require("../src/Models/BookingModel");
+const BookingModel = require("../Models/BookingModel");
 let request = JSON.parse(payload);
 
 //mqtt 

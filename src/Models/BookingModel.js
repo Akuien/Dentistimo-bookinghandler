@@ -3,8 +3,7 @@ const mongoose = require("mongoose");
 const bookingSchema = new mongoose.Schema(
     {
         user: {
-            type: String, 
-            ref: "UserModel"
+            type: String
         },
         day: {
             type: String,
@@ -16,14 +15,12 @@ const bookingSchema = new mongoose.Schema(
             // required: true,
         },
         dentist: {
-            type: String,
-            // required: true,
-            ref: "DentistsModel"
-         }/* ,
+            type: String
+         },
         issuance: {
             type:String,
-            required: true
-        } */
+           // required: true
+        }
     },
 );
 

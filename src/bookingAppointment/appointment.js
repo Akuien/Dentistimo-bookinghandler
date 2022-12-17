@@ -1,145 +1,63 @@
-let Dentist = require("../models/DentistsModel");
 const Booking = require("../models/BookingModel");
-const BookingModel = require("../Models/BookingModel");
-let request = JSON.parse(payload);
+var mongoose = require('mongoose');
+  // Variables
+var mongoURI = process.env.MONGODB_URI || 'mongodb+srv://Dentistimo:QsyJymgvpYZZeJPc@cluster0.hnkdpp5.mongodb.net/?retryWrites=true&w=majority';
+//var port = process.env.PORT || 3000;
 
-//mqtt 
-let numberOfDentists = request.numberOfDentists;
-let numberOfAppointments = 0;
+// Connect to MongoDB
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true }, function(err) {
+    if (err) {
+        console.error(`Failed to connect to MongoDB with URI: ${mongoURI}`);
+        console.error(err.stack);
+        process.exit(1);
+    }
+    console.log(`Connected to MongoDB with URI: ${mongoURI}`);
+});
 
-console.log("DentistsModel: ", numberOfDentists);
+//mqtt connection
+var mqtt = require('mqtt');
+const path = require('path')
+require('dotenv').config({ path: path.resolve(__dirname, './.env') })
 
-let newRequest = {
 
-        description: request.description,
-        user: request.user,
-        day: request.day,
-        start: request.start,
-        end: request.end,
-        dentist: request.dentist,
-        issuance: request.issuance,
-};
-console.log("New Request Incoming: ", newRequest);
-console.log("Current Dentist: ", request.dentist);
+const options = {
+  host: '45fb8d87df7040eb8434cea2937cfb31.s1.eu.hivemq.cloud',
+  port: 8883,
+  protocol: 'mqtts',
+  username: 'Team5@Broker',
+  password: 'Team5@Broker'
+}
 
-//getting appointemts
+const client = mqtt.connect(options)
 
-BookingModel.find(
-    {dentist: request.dentist},
-    function(error,appointments) {
-        if (error) {
-            return next(error);
-        }
-        let appointmentsArray =  appointments;
-        // console.log("Appointemnts!!", appointments);
+// setup the callbacks
+client.on('connect', function () {
+  console.log('Connected Successfully');
+  console.log('Listening...');
+});
 
-         //Check Availability
-         appointmentsArray.forEach((appointment) => {
-            // console.log(appointment.start);
-            if (appointment.start == request.start) {
-              numberOfAppointments++;
-            }
+client.on('error', function (error) {
+  console.log(error);
+});
 
-            //Duplicate User
-            if (
-              appointment.start == request.start &&
-              appointment.user == request.user
-            ) {
-              numberOfAppointments = 99;
-            }
-          });
-          console.log("Current Appointments ", numberOfAppointments);
 
-          if (numberOfAppointments < numberOfDentists) {
-            //confirm the new booking
-            console.log("Slot Available");
+client.subscribe('BookingInfo/test', function () {
+  // When a message arrives, print it to the console
+  client.on('message', function (topic, message) {
 
-            let newAppointment = new Appointment(newRequest);
+    console.log("Received '" + message + "' on '" + topic + "'")
+    
+    const bookingInfo = JSON.parse(message);
 
-            newAppointment.save(function (error, savedAppointment) {
-              if (error) {
-                console.log(error);
-              }
+      const newBooking= new Booking({
+      user: bookingInfo.user,
+      day: bookingInfo.day,
+      start: bookingInfo.start,
+      dentist: bookingInfo.dentist,
+      issuance: bookingInfo.issuance
+    })
 
-              console.log(savedAppointment);
-
-              //Response
-
-              let response = {
-                userid: request.user,
-                requestid: request.issuance,
-                time: request.start,
-              };
-
-              let responseString = JSON.stringify(response);
-
-              client.publish(
-                topicResponse1,
-                responseString,
-                { qos: 1, retain: false },
-                (error) => {
-                  if (error) {
-                    console.error(error);
-                  }
-                }
-              );
-            });
-
-            resolve("New Appointment Confirmed")
-          }
-          //Fully Booked
-          else if (numberOfAppointments == numberOfDentists) {
-            console.log("Timeslot Is Fully Booked!");
-
-            //Response
-
-            let response = {
-              userid: request.user,
-              requestid: request.issuance,
-              time: "none",
-            };
-
-            let responseString = JSON.stringify(response);
-
-            client.publish(
-              topicResponse2,
-              responseString,
-              { qos: 1, retain: false },
-              (error) => {
-                if (error) {
-                  console.error(error);
-                }
-              }
-            );
-
-            reject()
-          }
-          //Double Booking
-          else if (numberOfAppointments > numberOfDentists) {
-            console.log("User Allready Has An Appointment At This Time");
-
-            //Response
-
-            let response = {
-              userid: request.user,
-              requestid: request.issuance,
-              time: "none",
-            };
-
-            let responseString = JSON.stringify(response);
-
-            client.publish(
-              topicResponse3,
-              responseString,
-              { qos: 1, retain: false },
-              (error) => {
-                if (error) {
-                  console.error(error);
-                }
-              }
-            );
-
-            reject()
-          }
-        }
-      );
+    console.log(newBooking)
+    var savedUser = newBooking.save();
+  })
+})

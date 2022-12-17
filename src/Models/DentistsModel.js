@@ -58,9 +58,13 @@ const dentistSchema = new mongoose.Schema(
                 type: String,
                 required: true
             }
+        },
+       appintments: {
+            required: true,
+            type: mongoose.Types.ObjectId,
+            ref: "BookingModel"
         }
-    }, {
-        timestamps: true // created at and updated at time
-});
+    }
+    );
 
 module.exports = mongoose.model("dentists", dentistSchema);

@@ -1,4 +1,4 @@
-var mqtt = require('mqtt');
+/* var mqtt = require('mqtt');
 
 const client = mqtt.connect({
     host: '5f8b74c7be3745769c00bbb62e5f86b5.s2.eu.hivemq.cloud',
@@ -32,3 +32,4 @@ client.subscribe('my/test/topic5');
 // publish message 'Hello' to topic 'my/test/topic'
 client.publish('my/test/topic3', 'Hello, hope this is the dentist handler');
 client.publish('my/test/topic4', 'Sup Mr Dentist, I need my tooth out');
+ */

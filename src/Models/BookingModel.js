@@ -1,31 +1,27 @@
 const mongoose = require("mongoose");
+var Schema = mongoose.Schema;
 
-const bookingSchema = new mongoose.Schema(
-    {
+var bookingSchema = new Schema(
+    { 
+        id: {
+        type: String,
+      },
         user: {
-            required: true,
-            type: mongoose.Types.ObjectId,
-            ref: "UserModel"
+            type: String
         },
         day: {
-            type: String,
-            required: true,
-
+            type: String
         },
         start: {
-            type: String,
-            required: true,
+            type: String
         },
         dentist: {
-            required: true,
-            type: mongoose.Types.ObjectId,
-            ref: "DentistsModel"
-         }/* ,
+            type: String
+         },
         issuance: {
-            type:String,
-            required: true
-        } */
+            type:String
+        }
     },
 );
 
-module.exports = mongoose.model("BookingModel", bookingSchema);
+module.exports = mongoose.model("booking", bookingSchema);

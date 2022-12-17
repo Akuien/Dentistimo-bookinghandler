@@ -62,7 +62,7 @@ const dentistSchema = new mongoose.Schema(
        appintments: {
             required: true,
             type: mongoose.Types.ObjectId,
-            ref: "BookingModel"
+            ref: "bookingmodels"
         }
     }
     );

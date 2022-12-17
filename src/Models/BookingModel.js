@@ -1,27 +1,27 @@
 const mongoose = require("mongoose");
-var Schema = mongoose.Schema;
 
-var bookingSchema = new Schema(
-    { 
-        id: {
-        type: String,
-      },
+const bookingSchema = new mongoose.Schema(
+    {
         user: {
             type: String
         },
         day: {
-            type: String
+            type: String,
+            // required: true,
+
         },
         start: {
-            type: String
+            type: String,
+            // required: true,
         },
         dentist: {
             type: String
          },
         issuance: {
-            type:String
+            type:String,
+           // required: true
         }
     },
 );
 
-module.exports = mongoose.model("booking", bookingSchema);
+module.exports = mongoose.model("bookingmodels", bookingSchema);

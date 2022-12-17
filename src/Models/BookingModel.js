@@ -8,16 +8,16 @@ const bookingSchema = new mongoose.Schema(
         },
         day: {
             type: String,
-            required: true,
+            // required: true,
 
         },
         start: {
             type: String,
-            required: true,
+            // required: true,
         },
         dentist: {
             type: String,
-            required: true,
+            // required: true,
             ref: "DentistsModel"
          }/* ,
         issuance: {
@@ -27,4 +27,4 @@ const bookingSchema = new mongoose.Schema(
     },
 );
 
-module.exports = mongoose.model("BookingModel", bookingSchema);
+module.exports = mongoose.model("bookingmodels", bookingSchema);

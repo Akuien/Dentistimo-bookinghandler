@@ -58,6 +58,28 @@ client.subscribe('BookingInfo/test', function () {
     })
 
     console.log(newBooking)
-    var savedUser = newBooking.save();
-  })
+    var savedAppointment= newBooking.save();
+
+    //Response
+
+    let response = {
+      user: bookingInfo.user,
+      issuance: bookingInfo.issuance,
+      start: bookingInfo.start,
+    };
+
+    let responseString = JSON.stringify(response);
+
+                client.publish(
+                  'ui/approved',
+                  responseString,
+                  { qos: 1, retain: false },
+                  (error) => {
+                    if (error) {
+                      console.error(error);
+                    }
+                  }
+                );
+              });
+              console.log('New Appointment Confirmed')
 })

@@ -5,7 +5,7 @@ This component is responsible for handling the booking details of the appointmen
 It is one of the major components that makes up the whole distributed system of  Destistimo system.
 
 
-## Component Responiblities:
+## Component Resposiblities:
 - Collect valid appointment information from user interface component.
 - Forward aforementioned data into the database.
 

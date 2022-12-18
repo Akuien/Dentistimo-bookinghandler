@@ -23,7 +23,6 @@ BookingHandler acts as subscriber when recieving the booking infomation from the
 - Node.js
 - MongoDB
 - HiveMQ
-- node-fetch
 
 ## Authors and acknowledgment(Team Members)
 - Akuen Akoi Deng

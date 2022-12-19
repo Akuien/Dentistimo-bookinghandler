@@ -49,6 +49,7 @@ client.subscribe('BookingInfo/test', function () {
     
     const bookingInfo = JSON.parse(message);
 
+    if(topic === 'BookingInfo/test') {
       const newBooking= new Booking({
       user: bookingInfo.user,
       day: bookingInfo.day,
@@ -56,8 +57,35 @@ client.subscribe('BookingInfo/test', function () {
       dentist: bookingInfo.dentist,
       issuance: bookingInfo.issuance
     })
+    newBooking.save(function (error, savedAppointment) {
+      if (error) {
+        console.log(error);
+      }
+      console.log(savedAppointment);
+  }
+    )
+    }
+  try {
+    let response = {
+      user: bookingInfo.user,
+      issuance: bookingInfo.issuance,
+      start: bookingInfo.start,
+    };
 
-    console.log(newBooking)
-    var savedUser = newBooking.save();
-  })
+    let responseString = JSON.stringify(response);
+
+    client.publish( "ui/approved", responseString, 1, (error) => {
+        if (error) {
+          console.error(error);
+        } else {
+          console.log("New Appointment Confirmed")
+          console.log(responseString)
+        }
+      }
+    );
+  } catch (error) {
+    return (error)
+  }
+ });
+              
 })

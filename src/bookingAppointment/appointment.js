@@ -49,14 +49,42 @@ client.subscribe('BookingInfo/test', function () {
     
     const bookingInfo = JSON.parse(message);
 
+    let numberOfDentists = bookingInfo.numberOfDentists;
+    let numberOfAppointments = 0;
+
+    console.log("Dentists: ", numberOfDentists);
+
     if(topic === 'BookingInfo/test') {
       const newBooking= new Booking({
       user: bookingInfo.user,
       day: bookingInfo.day,
       start: bookingInfo.start,
       dentist: bookingInfo.dentist,
-      issuance: bookingInfo.issuance
+      issuance: bookingInfo.issuance,
+      numberOfDentists: bookingInfo.numberOfDentists
     })
+     //get all appointment from the clinic
+ Booking.find(
+  { dentist: bookingInfo.dentist },
+  function (err, appointments) {
+    if (err) {
+      return next(err);
+    }
+   
+    let appointmentsArray = appointments;
+   console.log("Appointemnts for this den!!", appointmentsArray);
+   //console.log("Appointemnts 2 !!", appointments);
+
+    //Check Availability
+    appointmentsArray.forEach((appointment) => {
+      // console.log(appointment.start);
+      if (appointment.day == bookingInfo.day && appointment.start == bookingInfo.start ) {
+        numberOfAppointments++;
+      }
+
+    });
+    console.log("Current Appointments  2: ", numberOfAppointments);
+
     newBooking.save(function (error, savedAppointment) {
       if (error) {
         console.log(error);
@@ -64,7 +92,7 @@ client.subscribe('BookingInfo/test', function () {
       console.log(savedAppointment);
   }
     )
-    }
+
   try {
     let response = {
       user: bookingInfo.user,
@@ -86,6 +114,8 @@ client.subscribe('BookingInfo/test', function () {
   } catch (error) {
     return (error)
   }
- });
-              
+    }
+    )}
 })
+   })
+  

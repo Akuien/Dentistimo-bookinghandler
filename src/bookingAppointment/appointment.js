@@ -70,17 +70,18 @@ client.subscribe('BookingInfo/test', function () {
     if (err) {
       return next(err);
     }
-   
-    let appointmentsArray = appointments;
+    let appointmentsArray = [];
+      appointmentsArray = appointments;
    console.log("Appointemnts for this den!!", appointmentsArray);
    //console.log("Appointemnts 2 !!", appointments);
 
     //Check Availability
     appointmentsArray.forEach((appointment) => {
-      // console.log(appointment.start);
       if (appointment.day == bookingInfo.day && appointment.start == bookingInfo.start ) {
         numberOfAppointments++;
       }
+    console.log(appointment.start + " " +  bookingInfo.start );
+    console.log(appointment.day + " " + bookingInfo.day );
 
     });
     console.log("Current Appointments  2: ", numberOfAppointments);
@@ -89,10 +90,9 @@ client.subscribe('BookingInfo/test', function () {
       if (error) {
         console.log(error);
       }
-      console.log(savedAppointment);
+      console.log("hie " + savedAppointment);
   }
     )
-
   try {
     let response = {
       user: bookingInfo.user,

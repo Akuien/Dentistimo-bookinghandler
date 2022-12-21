@@ -70,30 +70,38 @@ client.subscribe('BookingInfo/test', function () {
     if (err) {
       return next(err);
     }
-   
-    let appointmentsArray = appointments;
-   console.log("Appointemnts for this den!!", appointmentsArray);
+
+    let appointmentsArray = [];
+
+   appointmentsArray = appointments;
+
+   // console.log("Appointemnts for this den!!", appointmentsArray);
    //console.log("Appointemnts 2 !!", appointments);
 
     //Check Availability
     appointmentsArray.forEach((appointment) => {
-      // console.log(appointment.start);
       if (appointment.day == bookingInfo.day && appointment.start == bookingInfo.start ) {
         numberOfAppointments++;
       }
 
+    /* console.log(appointment.start + " " +  bookingInfo.start );
+    console.log(appointment.day + " " + bookingInfo.day ); */
+
     });
-    console.log("Current Appointments  2: ", numberOfAppointments);
+
+    console.log("Current Appointments  : ", numberOfAppointments);
+
+    if (numberOfAppointments < numberOfDentists) {
+      //confirm the new booking
+      console.log("Slot Available"); 
 
     newBooking.save(function (error, savedAppointment) {
       if (error) {
         console.log(error);
       }
-      console.log(savedAppointment);
-  }
-    )
 
-  try {
+      console.log("hie " + savedAppointment);
+ 
     let response = {
       user: bookingInfo.user,
       issuance: bookingInfo.issuance,
@@ -106,15 +114,15 @@ client.subscribe('BookingInfo/test', function () {
         if (error) {
           console.error(error);
         } else {
-          console.log("New Appointment Confirmed")
-          console.log(responseString)
+          console.log("New Appointment Confirmed ")
+          // console.log(responseString)
         }
-      }
-    );
-  } catch (error) {
-    return (error)
-  }
+      });
+    })
+    } else {
+      console.log("Slot not Available!!"); 
     }
+  }
     )}
 })
    })

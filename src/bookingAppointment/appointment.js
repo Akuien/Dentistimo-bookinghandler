@@ -79,17 +79,13 @@ client.subscribe('BookingInfo/test', function () {
    //console.log("Appointemnts 2 !!", appointments);
 
     //Check Availability
-    appointmentsArray.forEach((appointment) => {
+    appointmentsArray.forEach((appointment) => { 
       if (appointment.day == bookingInfo.day && appointment.start == bookingInfo.start ) {
-        numberOfAppointments++;
+         numberOfAppointments++;
       }
 
-    /* console.log(appointment.start + " " +  bookingInfo.start );
-    console.log(appointment.day + " " + bookingInfo.day ); */
-
     });
-
-    console.log("Current Appointments  : ", numberOfAppointments);
+    // console.log("Current Appointments  : ", numberOfAppointments);
 
     if (numberOfAppointments < numberOfDentists) {
       //confirm the new booking
@@ -119,8 +115,25 @@ client.subscribe('BookingInfo/test', function () {
         }
       });
     })
-    } else {
-      console.log("Slot not Available!!"); 
+    }  else if (numberOfAppointments == numberOfDentists) {
+      console.log("sorry Timeslot Is Fully Booked!");
+
+      let response1 = {
+        user: bookingInfo.user,
+        issuance: bookingInfo.issuance,
+        start: "none"
+      };
+
+      let responseString1 = JSON.stringify(response1);
+
+      client.publish("ui/notapproved", responseString1, 1, (error) => {
+          if (error) {
+            console.error(error);
+          } else {
+            console.log("booking failed")
+            // console.log(responseString)
+          }
+        });
     }
   }
     )}

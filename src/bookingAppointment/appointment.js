@@ -58,6 +58,7 @@ client.subscribe('BookingInfo/test', function () {
       const newBooking= new Booking({
       user: bookingInfo.user,
       day: bookingInfo.day,
+      date: bookingInfo.date,
       start: bookingInfo.start,
       dentist: bookingInfo.dentist,
       issuance: bookingInfo.issuance,
@@ -89,14 +90,14 @@ client.subscribe('BookingInfo/test', function () {
 
     if (numberOfAppointments < numberOfDentists) {
       //confirm the new booking
-      console.log("Slot Available"); 
+      console.log("This slot is available"); 
 
     newBooking.save(function (error, savedAppointment) {
       if (error) {
         console.log(error);
       }
 
-      console.log("hie " + savedAppointment);
+      console.log("New Appointment: " + savedAppointment);
  
     let response = {
       user: bookingInfo.user,
@@ -111,12 +112,11 @@ client.subscribe('BookingInfo/test', function () {
           console.error(error);
         } else {
           console.log("New Appointment Confirmed ")
-          // console.log(responseString)
         }
       });
     })
     }  else if (numberOfAppointments == numberOfDentists) {
-      console.log("sorry Timeslot Is Fully Booked!");
+      console.log("Sorry, this timeslot Is no longer available!! Pick another time. :)");
 
       let response1 = {
         user: bookingInfo.user,

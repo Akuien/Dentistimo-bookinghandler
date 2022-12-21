@@ -8,7 +8,11 @@ const bookingSchema = new mongoose.Schema(
             ref: "users"
         },
         day: {
-            type: String,
+           type: String,
+           required: true,
+         },
+         date: {
+           type: String,
            required: true,
          },
         start: {

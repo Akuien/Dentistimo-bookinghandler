@@ -1,4 +1,7 @@
 const Booking = require("../models/BookingModel");
+const nodemailer = require("nodemailer");
+const { generateEmailTemplate } = require("../services/mails");
+
 var mongoose = require('mongoose');
   // Variables
 var mongoURI = process.env.MONGODB_URI || 'mongodb+srv://Dentistimo:QsyJymgvpYZZeJPc@cluster0.hnkdpp5.mongodb.net/?retryWrites=true&w=majority';
@@ -48,6 +51,7 @@ client.subscribe('BookingInfo/test', function () {
     console.log("Received '" + message + "' on '" + topic + "'")
     
     const bookingInfo = JSON.parse(message);
+    console.log(bookingInfo);
 
     let numberOfDentists = bookingInfo.numberOfDentists;
     let numberOfAppointments = 0;
@@ -98,6 +102,7 @@ client.subscribe('BookingInfo/test', function () {
       }
 
       console.log("New Appointment: " + savedAppointment);
+      sendConfirmationMail(bookingInfo.email , bookingInfo.date , bookingInfo.day , bookingInfo.start) //email sending 
  
     let response = {
       user: bookingInfo.user,
@@ -139,4 +144,41 @@ client.subscribe('BookingInfo/test', function () {
     )}
 })
    })
+
+
+// for sending email confirmation
+const sendConfirmationMail = async (bookingEmail, bookingDate, bookingDay, bookingTime) => {
+  var email = bookingEmail
+  var date = bookingDate
+  var day = bookingDay
+  var time = bookingTime
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      auth: {
+        user: "dentistimogroup5@gmail.com",
+        pass: "xhoevjhavlqgbhvn",
+      },
+    });
+    const mailOptions = {
+      from: "dentistimogroup5@gmail.com",
+      to: email,
+      subject: "Booking Confirmation",
+      html: generateEmailTemplate(date, day, time),
+    };
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("email have been sent:- ", info.response);
+      }
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+};
   

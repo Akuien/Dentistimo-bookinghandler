@@ -81,7 +81,7 @@ client.subscribe('BookingInfo/test', function () {
 
     //Check Availability
     appointmentsArray.forEach((appointment) => { 
-      if (appointment.day == bookingInfo.day && appointment.start == bookingInfo.start ) {
+      if (appointment.date == bookingInfo.date && appointment.start == bookingInfo.start ) {
          numberOfAppointments++;
       }
 

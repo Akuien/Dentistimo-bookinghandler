@@ -145,6 +145,41 @@ client.subscribe('BookingInfo/test', function () {
 })
    })
 
+   client.subscribe('availability/getuserappointments', function () {
+    // When a message arrives, print it to the console
+    client.on('message', function (topic, message) {
+  
+      console.log("Received this lovely " + message + "  on " + topic + " yaay")
+      
+      const userDetails = JSON.parse(message);
+      let userid = userDetails.user;
+      // let requestid = userDetails.requestid;
+  
+      console.log("user: ", userid);
+  
+      if(topic === 'availability/getuserappointments') {
+      Booking.find(
+    { user: userid },
+    function (err, appointments) {
+      if (err) {
+        return next(err);
+      }
+        let responseString = JSON.stringify(appointments);
+        console.log(responseString)
+
+        client.publish( "ui/userAppointmentsFound", responseString, 1, (error) => {
+            if (error) {
+              console.error(error);
+            } else {
+              console.log("sent the user appointmets to UI ")
+            }
+          });
+    } 
+      )}
+  })
+  })
+
+
 
 // for sending email confirmation
 const sendConfirmationMail = async (bookingEmail, bookingDate, bookingDay, bookingTime) => {

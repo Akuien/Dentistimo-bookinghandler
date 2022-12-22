@@ -23,9 +23,10 @@ exports.generateEmailTemplate = (date, day, time) => {
                   </div>
                   <div style="padding: 20px; background-color: rgb(255, 255, 255);">
                     <div style="color: rgb(0, 0, 0); text-align: center;">
-                      <h1 style="margin: 1rem 0">This email is to inform you that your appointment on ${day} at ${time} that was made on ${date} was successfully registered. </h1>
-                      <p style="padding-bottom: 16px">No need to reply.</p>
-                      <p style="padding-bottom: 16px">Thanks, looking forward to see you<br>Dentisimo team 5</p>
+                      <h1 style="margin: 1rem 0"> Confirmation </h1>
+                      <p style="padding-bottom: 16px">This email is to inform you that your appointment on ${day} at ${time} that was made on ${date} was successfully registered. 
+                       <br>No need to reply.</p>
+                      <p style="padding-bottom: 16px">Looking forward to see you <br> Dentisimo team 5</p>
                     </div>
                   </div>
                   <div style="padding-top: 20px; color: rgb(153, 153, 153); text-align: center;"></div>

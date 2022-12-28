@@ -43,13 +43,25 @@ client.on('error', function (error) {
   console.log(error);
 });
 
+//CIRCUIT BREAKER
+const CircuitBreaker = require('opossum');
 
-client.subscribe('BookingInfo/test', function () {
-  // When a message arrives, print it to the console
-  client.on('message', function (topic, message) {
+
+const circuitOptions = {
+  timeout: 3000, // If our function takes longer than 3 seconds, trigger a failure
+  errorThresholdPercentage: 50, // When 50% of requests fail, trigger a failure
+  resetTimeout: 30000 // After 30 seconds, try again.
+};
+
+
+
+bookingRequestHandler = function(topic, message) {
+
+  return new Promise((resolve, reject) => {
+    // Do something, maybe on the network or a disk
 
     console.log("Received '" + message + "' on '" + topic + "'")
-    
+      
     const bookingInfo = JSON.parse(message);
     console.log(bookingInfo);
 
@@ -120,6 +132,9 @@ client.subscribe('BookingInfo/test', function () {
         }
       });
     })
+    
+    resolve("New Appointment Confirmed")
+
     }  else if (numberOfAppointments == numberOfDentists) {
       console.log("Sorry, this timeslot Is no longer available!! Pick another time. :)");
 
@@ -139,11 +154,58 @@ client.subscribe('BookingInfo/test', function () {
             // console.log(responseString)
           }
         });
+
+        reject()
     }
   }
     )}
-})
-   })
+
+  })  
+}
+
+
+
+
+  client.subscribe('BookingInfo/test', function () {
+    // When a message arrives, print it to the console
+    client.on('message', function (topic, message) {
+
+      const circuit = new CircuitBreaker(bookingRequestHandler, circuitOptions);
+
+      circuit.fire(topic, message).then(console.log).catch(console.error);
+
+      circuit.fallback(() => {
+        // Do something as a fallback, like logging the error or returning a default value
+      });
+      
+      circuit.on('fallback', () => {
+        console.log('Sorry, out of service right now');
+      });
+      
+      circuit.on('success', () => {
+        console.log('Success');
+      });
+      
+      circuit.on('timeout', () => {
+        console.log('Circuit Breaker has Timeout');
+      });
+      
+      circuit.on('open', () => {
+        console.log('Circuit Breaker open');
+      });
+      
+      circuit.on('halfOpen', () => {
+        console.log('Circuit Breaker half open');
+      });
+      
+      circuit.on('close', () => {
+        console.log('Circuit Breaker closed');
+      });
+
+     })
+  })
+
+
 
    client.subscribe('availability/getuserappointments', function () {
     // When a message arrives, print it to the console

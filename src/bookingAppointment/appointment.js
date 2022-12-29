@@ -178,6 +178,37 @@ client.subscribe('BookingInfo/test', function () {
       )}
   })
   })
+  client.subscribe('availability/deleteappointments', function () {
+    // When a message arrives, print it to the console
+    client.on('message', function (topic, message) {
+  
+      console.log("Received this lovely " + message + "  on " + topic + " yaay")
+      
+      const appointmentDetails = JSON.parse(message);
+      let appointmentid = appointmentDetails.appointment;
+      // let requestid = userDetails.requestid;
+  
+      console.log("appointment: ", appointmentid);
+  
+      if(topic === 'availability/deleteappointments') {
+      Booking.findOneAndDelete(
+    { appointment: appointmentid },
+    function (err, appointment) {
+      if (err) {
+        return next(err);
+      }
+      //  let responseString = JSON.stringify(appointment);
+      //   console.log(responseString) 
+        client.publish( "ui/deleteappointments")
+            if (err) {
+              console.error(err);
+            } else {
+              console.log("Delete appointment ")
+            }
+          });
+    } 
+      })
+    })
 
 
 

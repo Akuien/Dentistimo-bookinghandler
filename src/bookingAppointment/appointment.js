@@ -174,33 +174,18 @@ bookingRequestHandler = function(topic, message) {
 
       circuit.fire(topic, message).then(console.log).catch(console.error);
 
-      circuit.fallback(() => {
-        // Do something as a fallback, like logging the error or returning a default value
-      });
+
+      circuit.fallback(() => 'fallback, ');
+      circuit.on('fallback', () => console.log('Sorry, out of service right now'));
       
-      circuit.on('fallback', () => {
-        console.log('Sorry, out of service right now');
-      });
+/*       circuit.timeout(() => 'timeOut, ');
+      circuit.on('timeout', () => console.log('Circuit Breaker timeout')); */ 
       
-      circuit.on('success', () => {
-        console.log('Success');
-      });
-      
-      circuit.on('timeout', () => {
-        console.log('Circuit Breaker has Timeout');
-      });
-      
-      circuit.on('open', () => {
-        console.log('Circuit Breaker open');
-      });
-      
-      circuit.on('halfOpen', () => {
-        console.log('Circuit Breaker half open');
-      });
-      
-      circuit.on('close', () => {
-        console.log('Circuit Breaker closed');
-      });
+      circuit.close(() => 'close, ');
+      circuit.on('close', () => console.log('Circuit Breaker Closed'));
+
+      circuit.open(() => 'open, ');
+      circuit.on('open', () => console.log('Circuit Breaker openned'));
 
      })
   })

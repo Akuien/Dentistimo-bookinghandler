@@ -127,8 +127,8 @@ bookingRequestHandler = function(topic, message) {
     client.publish( "ui/approved", responseString, 1, (error) => {
         if (error) {
           console.error(error);
-        } else {
-          console.log("New Appointment Confirmed ")
+     /*    } else {
+          console.log("New Appointment Confirmed ") */
         }
       });
     })
@@ -258,6 +258,35 @@ bookingRequestHandler = function(topic, message) {
     })
 
 
+    function checkAppointmentAvailability(date, start, callback) {
+      // Find all bookings at the given time
+      Booking.find({ start: start, date: date }, (err, bookings) => {
+        if (err) {
+          return callback(err);
+        }
+        // Return the availability result
+        callback(null, bookings.length === 0);
+      });
+    }
+    
+    client.subscribe('appointment/request', 'subscribed to appointment/request ')
+    // Receive availability check request
+    client.on('message', (topic, message) => {
+      if (topic === 'appointment/request') {
+        const { date, start } = JSON.parse(message);
+        checkAppointmentAvailability(date, start, (err, availability) => {
+          if (err) {
+            console.error(err);
+          } else {
+            client.publish('appointment/response', JSON.stringify({ available: availability }), { qos: 2, retain: false}, (error)=> {
+              if (error) {
+                console.error(error);
+              }
+            });
+          }
+        });
+      }
+    });
 
 // for sending email confirmation
 const sendConfirmationMail = async (bookingEmail, bookingDate, bookingDay, bookingTime) => {

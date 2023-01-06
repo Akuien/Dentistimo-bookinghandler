@@ -112,7 +112,7 @@ bookingRequestHandler = function(topic, message) {
 
     let responseString = JSON.stringify(response);
 
-    client.publish( "booking/response/approved", responseString, 1, (error) => {
+    client.publish( "booking/response/approved", responseString, { qos: 1, retain: false }, (error) => {
         if (error) {
           console.error(error);
      /*    } else {
@@ -134,7 +134,7 @@ bookingRequestHandler = function(topic, message) {
 
       let responseString1 = JSON.stringify(response1);
 
-      client.publish("booking/response/notapproved", responseString1, 1, (error) => {
+      client.publish("booking/response/notapproved", responseString1, { qos: 1, retain: false }, (error) => {
           if (error) {
             console.error(error);
           } else {
@@ -180,7 +180,7 @@ bookingRequestHandler = function(topic, message) {
 
 
 
-   client.subscribe('availability/getuserappointments', function () {
+   client.subscribe('getUserAppointments/request', function () {
     // When a message arrives, print it to the console
     client.on('message', function (topic, message) {
   
@@ -192,7 +192,7 @@ bookingRequestHandler = function(topic, message) {
   
       console.log("user: ", userid);
   
-      if(topic === 'availability/getuserappointments') {
+      if(topic === 'getUserAppointments/request') {
       Booking.find(
     { user: userid },
     function (err, appointments) {
@@ -202,7 +202,7 @@ bookingRequestHandler = function(topic, message) {
         let responseString = JSON.stringify(appointments);
         console.log(responseString)
 
-        client.publish( "ui/userAppointmentsFound", responseString, 1, (error) => {
+        client.publish( "getUserAppointments/response/found", responseString, { qos: 1, retain: false }, (error) => {
             if (error) {
               console.error(error);
             } else {

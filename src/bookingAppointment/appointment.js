@@ -1,8 +1,12 @@
 const Booking = require("../models/BookingModel");
 const nodemailer = require("nodemailer");
 const { generateEmailTemplate } = require("../services/mails");
+var database = require('../Database/database');
+var mqtt = require('mqtt');
+const path = require('path')
+require('dotenv').config({ path: path.resolve(__dirname, './.env') })
 
-var mongoose = require('mongoose');
+/* var mongoose = require('mongoose');
   // Variables
 var mongoURI = process.env.MONGODB_URI || 'mongodb+srv://Dentistimo:QsyJymgvpYZZeJPc@cluster0.hnkdpp5.mongodb.net/?retryWrites=true&w=majority';
 //var port = process.env.PORT || 3000;
@@ -15,12 +19,7 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true }, 
         process.exit(1);
     }
     console.log(`Connected to MongoDB with URI: ${mongoURI}`);
-});
-
-//mqtt connection
-var mqtt = require('mqtt');
-const path = require('path')
-require('dotenv').config({ path: path.resolve(__dirname, './.env') })
+}); */
 
 
 const options = {
@@ -46,19 +45,15 @@ client.on('error', function (error) {
 //CIRCUIT BREAKER
 const CircuitBreaker = require('opossum');
 
-
 const circuitOptions = {
   timeout: 3000, // If our function takes longer than 3 seconds, trigger a failure
   errorThresholdPercentage: 50, // When 50% of requests fail, trigger a failure
   resetTimeout: 30000 // After 30 seconds, try again.
 };
 
-
-
 bookingRequestHandler = function(topic, message) {
 
   return new Promise((resolve, reject) => {
-    // Do something, maybe on the network or a disk
 
     console.log("Received '" + message + "' on '" + topic + "'")
       
@@ -68,9 +63,7 @@ bookingRequestHandler = function(topic, message) {
     let numberOfDentists = bookingInfo.numberOfDentists;
     let numberOfAppointments = 0;
 
-    console.log("Dentists: ", numberOfDentists);
-
-    if(topic === 'BookingInfo/test') {
+    if(topic === 'booking/request') {
       const newBooking= new Booking({
       user: bookingInfo.user,
       day: bookingInfo.day,
@@ -80,7 +73,7 @@ bookingRequestHandler = function(topic, message) {
       issuance: bookingInfo.issuance,
       numberOfDentists: bookingInfo.numberOfDentists
     })
-     //get all appointment from the clinic
+  
  Booking.find(
   { dentist: bookingInfo.dentist },
   function (err, appointments) {
@@ -89,13 +82,8 @@ bookingRequestHandler = function(topic, message) {
     }
 
     let appointmentsArray = [];
+    appointmentsArray = appointments;
 
-   appointmentsArray = appointments;
-
-   // console.log("Appointemnts for this den!!", appointmentsArray);
-   //console.log("Appointemnts 2 !!", appointments);
-
-    //Check Availability
     appointmentsArray.forEach((appointment) => { 
       if (appointment.date == bookingInfo.date && appointment.start == bookingInfo.start ) {
          numberOfAppointments++;
@@ -124,7 +112,7 @@ bookingRequestHandler = function(topic, message) {
 
     let responseString = JSON.stringify(response);
 
-    client.publish( "ui/approved", responseString, 1, (error) => {
+    client.publish( "booking/response/approved", responseString, 1, (error) => {
         if (error) {
           console.error(error);
      /*    } else {
@@ -146,7 +134,7 @@ bookingRequestHandler = function(topic, message) {
 
       let responseString1 = JSON.stringify(response1);
 
-      client.publish("ui/notapproved", responseString1, 1, (error) => {
+      client.publish("booking/response/notapproved", responseString1, 1, (error) => {
           if (error) {
             console.error(error);
           } else {
@@ -166,7 +154,7 @@ bookingRequestHandler = function(topic, message) {
 
 
 
-  client.subscribe('BookingInfo/test', function () {
+  client.subscribe('booking/request', function () {
     // When a message arrives, print it to the console
     client.on('message', function (topic, message) {
 

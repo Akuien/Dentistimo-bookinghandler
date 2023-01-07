@@ -6,22 +6,6 @@ var mqtt = require('mqtt');
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, './.env') })
 
-/* var mongoose = require('mongoose');
-  // Variables
-var mongoURI = process.env.MONGODB_URI || 'mongodb+srv://Dentistimo:QsyJymgvpYZZeJPc@cluster0.hnkdpp5.mongodb.net/?retryWrites=true&w=majority';
-//var port = process.env.PORT || 3000;
-
-// Connect to MongoDB
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true }, function(err) {
-    if (err) {
-        console.error(`Failed to connect to MongoDB with URI: ${mongoURI}`);
-        console.error(err.stack);
-        process.exit(1);
-    }
-    console.log(`Connected to MongoDB with URI: ${mongoURI}`);
-}); */
-
-
 const options = {
   host: '45fb8d87df7040eb8434cea2937cfb31.s1.eu.hivemq.cloud',
   port: 8883,
@@ -211,7 +195,8 @@ bookingRequestHandler = function(topic, message) {
       )}
   })
   })
-  client.subscribe('availability/deleteappointments', function () {
+
+  client.subscribe('booking/deleteappointments/request', function () {
     // When a message arrives, print it to the console
     client.on('message', function (topic, message) {
   
@@ -223,7 +208,7 @@ bookingRequestHandler = function(topic, message) {
   
       console.log("appointment: ", appointmentid);
   
-      if(topic === 'availability/deleteappointments') {
+      if(topic === 'booking/deleteappointments/request') {
       Booking.findOneAndDelete(
     { appointment: appointmentid },
     function (err, appointment) {
@@ -232,7 +217,7 @@ bookingRequestHandler = function(topic, message) {
       }
       //  let responseString = JSON.stringify(appointment);
       //   console.log(responseString) 
-        client.publish( "ui/deleteappointments")
+        client.publish( "booking/deleteappointments/response")
             if (err) {
               console.error(err);
             } else {
@@ -255,16 +240,16 @@ bookingRequestHandler = function(topic, message) {
       });
     }
     
-    client.subscribe('appointment/request', 'subscribed to appointment/request ')
+    client.subscribe('booking/timeSlotAvailability/request', 'subscribed to booking/timeSlotAvailability/request ')
     // Receive availability check request
     client.on('message', (topic, message) => {
-      if (topic === 'appointment/request') {
+      if (topic === 'booking/timeSlotAvailability/request') {
         const { date, start } = JSON.parse(message);
         checkAppointmentAvailability(date, start, (err, availability) => {
           if (err) {
             console.error(err);
           } else {
-            client.publish('appointment/response', JSON.stringify({ available: availability }), { qos: 2, retain: false}, (error)=> {
+            client.publish('booking/timeSlotAvailability/response', JSON.stringify({ available: availability }), { qos: 1, retain: false}, (error)=> {
               if (error) {
                 console.error(error);
               }

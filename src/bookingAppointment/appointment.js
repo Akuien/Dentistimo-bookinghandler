@@ -63,7 +63,7 @@ bookingRequestHandler = function(topic, message) {
     let numberOfDentists = bookingInfo.numberOfDentists;
     let numberOfAppointments = 0;
 
-    if(topic === 'booking/request') {
+    if(topic === 'booking/newAppointment/request') {
       const newBooking= new Booking({
       user: bookingInfo.user,
       day: bookingInfo.day,
@@ -90,10 +90,8 @@ bookingRequestHandler = function(topic, message) {
       }
 
     });
-    // console.log("Current Appointments  : ", numberOfAppointments);
 
     if (numberOfAppointments < numberOfDentists) {
-      //confirm the new booking
       console.log("This slot is available"); 
 
     newBooking.save(function (error, savedAppointment) {
@@ -112,7 +110,7 @@ bookingRequestHandler = function(topic, message) {
 
     let responseString = JSON.stringify(response);
 
-    client.publish( "booking/response/approved", responseString, { qos: 1, retain: false }, (error) => {
+    client.publish( "booking/newAppointment/response/approved", responseString, { qos: 1, retain: false }, (error) => {
         if (error) {
           console.error(error);
      /*    } else {
@@ -134,7 +132,7 @@ bookingRequestHandler = function(topic, message) {
 
       let responseString1 = JSON.stringify(response1);
 
-      client.publish("booking/response/notapproved", responseString1, { qos: 1, retain: false }, (error) => {
+      client.publish("booking/newAppointment/notapproved", responseString1, { qos: 1, retain: false }, (error) => {
           if (error) {
             console.error(error);
           } else {
@@ -154,7 +152,7 @@ bookingRequestHandler = function(topic, message) {
 
 
 
-  client.subscribe('booking/request', function () {
+  client.subscribe('booking/newAppointment/request', function () {
     // When a message arrives, print it to the console
     client.on('message', function (topic, message) {
 
@@ -180,7 +178,7 @@ bookingRequestHandler = function(topic, message) {
 
 
 
-   client.subscribe('getUserAppointments/request', function () {
+   client.subscribe('booking/getUserAppointments/request', function () {
     // When a message arrives, print it to the console
     client.on('message', function (topic, message) {
   
@@ -192,7 +190,7 @@ bookingRequestHandler = function(topic, message) {
   
       console.log("user: ", userid);
   
-      if(topic === 'getUserAppointments/request') {
+      if(topic === 'booking/getUserAppointments/request') {
       Booking.find(
     { user: userid },
     function (err, appointments) {
@@ -202,7 +200,7 @@ bookingRequestHandler = function(topic, message) {
         let responseString = JSON.stringify(appointments);
         console.log(responseString)
 
-        client.publish( "getUserAppointments/response/found", responseString, { qos: 1, retain: false }, (error) => {
+        client.publish( "booking/getUserAppointments/response/found", responseString, { qos: 1, retain: false }, (error) => {
             if (error) {
               console.error(error);
             } else {

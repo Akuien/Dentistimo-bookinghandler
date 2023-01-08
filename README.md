@@ -6,18 +6,21 @@ It is one of the major components that makes up the whole distributed system of 
 
 
 ## Component Resposiblities:
-- Collect valid appointment information from user interface component.
-- Forward aforementioned data into the database.
+- Checking if a timeslot selected by a user is available.
+- Processing appointment booking requests.
+- Save approved booking requests to the database.
+- Send booking confirmation email.
+- Retriving a users booked appointments as well as deleting them upon request.
 
 ## Architectural style
 - **Publish and subscribe:**
 
-BookingHandler acts as subscriber when recieving the booking infomation from the user interface component, and then save the recieved data into the MongoDB database.
+BookingHandler acts as publisher and subscriber when  sendind and recieving messages from the user interface component.
 
 ## Get started:
 1. Clone the repository
 2. Go to terminal and install all dependancies using: `npm install`
-3. To run the component do: `cd src `  then  ` node app.js`
+3. To run the component do: `cd src ` then ` node app.js`
 
 ## Technologies:
 - Node.js
@@ -31,7 +34,6 @@ BookingHandler acts as subscriber when recieving the booking infomation from the
 - Cynthia Tarwireyi
 - Nazli Moghaddam
 - Jonna Johansson
-- Sergey Balan
 
 ##
 **More details about this system can be found in:** [Documentation](https://git.chalmers.se/courses/dit355/dit356-2022/t-5/t-5-documentation)

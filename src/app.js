@@ -79,7 +79,7 @@ client.on('message', async function (topic, message) {
         }
         let responseString = JSON.stringify(appointment);
          console.log("this is the apointment to delete:" + responseString) 
-          client.publish( "booking/deleteappointments/response", { qos: 1, retain: false }, (error) => {
+          client.publish( "booking/deleteappointments/response", responseString, { qos: 1, retain: false }, (error) => {
               if (err) {
                 console.error(err);
               } else {

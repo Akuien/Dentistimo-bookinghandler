@@ -69,6 +69,7 @@ client.on('message', async function (topic, message) {
               });
         } 
           )
+
     //deleteappointments
   } else if(topic === 'booking/deleteappointments/request') {
 
@@ -84,9 +85,9 @@ client.on('message', async function (topic, message) {
         }
         let responseString = JSON.stringify(appointment);
          console.log("this is the apointment to delete:" + responseString) 
-          client.publish( "booking/deleteappointments/response", responseString, { qos: 1, retain: false }, (error) => {
-              if (error) {
-                console.error(error);
+          client.publish( "booking/deleteappointments/response", { qos: 1, retain: false }, (error) => {
+              if (err) {
+                console.error(err);
               } else {
                 console.log("appointment Deleted")
               }
@@ -110,20 +111,21 @@ client.on('message', async function (topic, message) {
 }  else if (topic === 'booking/newAppointment/request') {
   const circuit = new CircuitBreaker(bookingHandler.bookingRequestHandler, circuitOptions);
 
-  circuit.fire(topic, message); //.then(console.log).catch(console.error);
-
-  circuit.open(() => 'open, ');
-  circuit.on('open', () => console.log('Circuit Breaker opened'));
-
   circuit.fallback(() => 'fallback, ');
   circuit.on('fallback', () => console.log('Sorry, out of service right now'));
+  
+  circuit.close(() => 'close, ');
+  circuit.on('close', () => console.log('Circuit Breaker Closed'));
 
-  circuit.close(() => 'close, ')
-  circuit.on('close', () => console.log('Circuit Breaker Closed'))
+  circuit.open(() => 'open, ');
+  circuit.on('open', () => console.log('Circuit Breaker openned'));
+
+
+  circuit.fire(topic, message); //.then(console.log).catch(console.error);
 }
 })
 
- function checkAppointmentAvailability(date, start, callback) {
+function checkAppointmentAvailability(date, start, callback) {
   // Find all bookings at the given time
   Booking.find({ start: start, date: date }, (err, bookings) => {
     if (err) {
@@ -132,4 +134,134 @@ client.on('message', async function (topic, message) {
     // Return the availability result
     callback(null, bookings.length === 0);
   });
-}  
+} 
+
+//******************************************************************************************************** */
+
+/*  bookingRequestHandler = function(topic, message) {
+
+  return new Promise((resolve, reject) => {
+
+    console.log("Received '" + message + "' on '" + topic + "'")
+      
+    const bookingInfo = JSON.parse(message);
+    console.log(bookingInfo);
+
+    let numberOfDentists = bookingInfo.numberOfDentists;
+    let numberOfAppointments = 0;
+
+      const newBooking= new Booking({
+      user: bookingInfo.user,
+      day: bookingInfo.day,
+      date: bookingInfo.date,
+      start: bookingInfo.start,
+      dentist: bookingInfo.dentist,
+      issuance: bookingInfo.issuance,
+      numberOfDentists: bookingInfo.numberOfDentists
+    })
+  
+ Booking.find(
+  { dentist: bookingInfo.dentist },
+  function (err, appointments) {
+    if (err) {
+      return next(err);
+    }
+
+    let appointmentsArray = [];
+    appointmentsArray = appointments;
+
+    appointmentsArray.forEach((appointment) => { 
+      if (appointment.date == bookingInfo.date && appointment.start == bookingInfo.start ) {
+         numberOfAppointments++;
+      }
+
+    });
+
+    if (numberOfAppointments < numberOfDentists) {
+      console.log("This slot is available"); 
+
+    newBooking.save(function (error, savedAppointment) {
+      if (error) {
+        console.log(error);
+      }
+
+      console.log("New Appointment: " + savedAppointment);
+      sendConfirmationMail(bookingInfo.email , bookingInfo.date , bookingInfo.day , bookingInfo.start) //email sending 
+ 
+    let response = {
+      user: bookingInfo.user,
+      issuance: bookingInfo.issuance,
+      start: bookingInfo.start,
+    };
+
+    let responseString = JSON.stringify(response);
+
+    client.publish( "booking/newAppointment/response/approved", responseString, { qos: 1, retain: false }, (error) => {
+        if (error) {
+          console.error(error);
+        }
+      });
+    })
+    
+    resolve("New Appointment Confirmed")
+
+    }  else if (numberOfAppointments == numberOfDentists) {
+      console.log("Sorry, this timeslot Is no longer available!! Pick another time. :)");
+
+      let response1 = {
+        user: bookingInfo.user,
+        issuance: bookingInfo.issuance,
+        start: "none"
+      };
+
+      let responseString1 = JSON.stringify(response1);
+
+      client.publish("booking/newAppointment/notapproved", responseString1, { qos: 1, retain: false }, (error) => {
+          if (error) {
+            console.error(error);
+          } else {
+            console.log("booking failed")
+          }
+        });
+      reject()
+    }
+  })
+})  
+} 
+
+// for sending email confirmation
+const sendConfirmationMail = async (bookingEmail, bookingDate, bookingDay, bookingTime) => {
+  var email = bookingEmail
+  var date = bookingDate
+  var day = bookingDay
+  var time = bookingTime
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      auth: {
+        user: "dentistimogroup5@gmail.com",
+        pass: "xhoevjhavlqgbhvn",
+      },
+    });
+    const mailOptions = {
+      from: "dentistimogroup5@gmail.com",
+      to: email,
+      subject: "Booking Confirmation",
+      html: generateEmailTemplate(date, day, time),
+    };
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("email have been sent:- ", info.response);
+      }
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+   */

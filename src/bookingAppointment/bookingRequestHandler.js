@@ -140,4 +140,6 @@ const sendConfirmationMail = async (bookingEmail, bookingDate, bookingDay, booki
       console.log(error.message);
     }
   };
-   module.exports.bookingRequestHandler = bookingRequestHandler; 
+    
+
+  module.exports.bookingRequestHandler = bookingRequestHandler; 

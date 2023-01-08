@@ -1,4 +1,4 @@
-/* const Booking = require("../models/BookingModel");
+const Booking = require("../models/BookingModel");
 const nodemailer = require("nodemailer");
 const { generateEmailTemplate } = require("../services/mails");
 var database = require('../Database/database');
@@ -142,4 +142,4 @@ const sendConfirmationMail = async (bookingEmail, bookingDate, bookingDay, booki
   };
     
 
-  module.exports.bookingRequestHandler = bookingRequestHandler;  */
+  module.exports.bookingRequestHandler = bookingRequestHandler; 

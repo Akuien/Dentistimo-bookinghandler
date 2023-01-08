@@ -1,4 +1,4 @@
-const Booking = require("../models/BookingModel");
+/* const Booking = require("../models/BookingModel");
 const bookingHandler = require("../bookingAppointment/bookingRequestHandler");
 const nodemailer = require("nodemailer");
 const { generateEmailTemplate } = require("../services/mails");
@@ -111,17 +111,16 @@ client.on('message', async function (topic, message) {
 }  else if (topic === 'booking/newAppointment/request') {
   const circuit = new CircuitBreaker(bookingHandler.bookingRequestHandler, circuitOptions);
 
-  circuit.fallback(() => 'fallback, ');
-  circuit.on('fallback', () => console.log('Sorry, out of service right now'));
-  
-  circuit.close(() => 'close, ');
-  circuit.on('close', () => console.log('Circuit Breaker Closed'));
+  circuit.fire(topic, message); //.then(console.log).catch(console.error);
 
   circuit.open(() => 'open, ');
-  circuit.on('open', () => console.log('Circuit Breaker openned'));
+  circuit.on('open', () => console.log('Circuit Breaker opened'));
 
+  circuit.fallback(() => 'fallback, ');
+  circuit.on('fallback', () => console.log('Sorry, out of service right now'));
 
-  circuit.fire(topic, message); //.then(console.log).catch(console.error);
+  circuit.close(() => 'close, ')
+  circuit.on('close', () => console.log('Circuit Breaker Closed'))
 }
 })
 
@@ -134,7 +133,7 @@ function checkAppointmentAvailability(date, start, callback) {
     // Return the availability result
     callback(null, bookings.length === 0);
   });
-} 
+}  */
 
 //******************************************************************************************************** */
 

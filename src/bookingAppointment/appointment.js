@@ -1,4 +1,5 @@
 const Booking = require("../models/BookingModel");
+const bookingHandler = require("../bookingAppointment/bookingRequestHandler");
 const nodemailer = require("nodemailer");
 const { generateEmailTemplate } = require("../services/mails");
 var database = require('../Database/database');
@@ -58,7 +59,6 @@ client.on('message', async function (topic, message) {
             return next(err);
           }
             let responseString = JSON.stringify(appointments);
-            console.log(responseString)
     
             client.publish( "booking/getUserAppointments/response/found", responseString, { qos: 1, retain: false }, (error) => {
                 if (error) {
@@ -83,15 +83,16 @@ client.on('message', async function (topic, message) {
         if (err) {
           return next(err);
         }
-        //  let responseString = JSON.stringify(appointment);
-        //   console.log(responseString) 
-          client.publish( "booking/deleteappointments/response")
+        let responseString = JSON.stringify(appointment);
+         console.log("this is the apointment to delete:" + responseString) 
+          client.publish( "booking/deleteappointments/response", { qos: 1, retain: false }, (error) => {
               if (err) {
                 console.error(err);
               } else {
-                console.log("Delete appointment ")
+                console.log("appointment Deleted")
               }
             });
+          });
             // Receive availability check request
   } else if (topic === 'booking/timeSlotAvailability/request') {
     const { date, start } = JSON.parse(message);
@@ -108,21 +109,21 @@ client.on('message', async function (topic, message) {
         });
         // newAppointment
 }  else if (topic === 'booking/newAppointment/request') {
-  const circuit = new CircuitBreaker(bookingRequestHandler, circuitOptions);
-      circuit.fire(topic, message).then(console.log).catch(console.error);
+  const circuit = new CircuitBreaker(bookingHandler.bookingRequestHandler, circuitOptions);
 
-      circuit.fallback(() => 'fallback, ');
-      circuit.on('fallback', () => console.log('Sorry, out of service right now'));
-      
-      circuit.close(() => 'close, ');
-      circuit.on('close', () => console.log('Circuit Breaker Closed'));
+  circuit.fallback(() => 'fallback, ');
+  circuit.on('fallback', () => console.log('Sorry, out of service right now'));
+  
+  circuit.close(() => 'close, ');
+  circuit.on('close', () => console.log('Circuit Breaker Closed'));
 
-      circuit.open(() => 'open, ');
-      circuit.on('open', () => console.log('Circuit Breaker openned'));
+  circuit.open(() => 'open, ');
+  circuit.on('open', () => console.log('Circuit Breaker openned'));
 
+
+  circuit.fire(topic, message); //.then(console.log).catch(console.error);
 }
 })
-
 
 function checkAppointmentAvailability(date, start, callback) {
   // Find all bookings at the given time
@@ -135,7 +136,9 @@ function checkAppointmentAvailability(date, start, callback) {
   });
 } 
 
-bookingRequestHandler = function(topic, message) {
+//******************************************************************************************************** */
+
+/*  bookingRequestHandler = function(topic, message) {
 
   return new Promise((resolve, reject) => {
 
@@ -224,7 +227,7 @@ bookingRequestHandler = function(topic, message) {
     }
   })
 })  
-}
+} 
 
 // for sending email confirmation
 const sendConfirmationMail = async (bookingEmail, bookingDate, bookingDay, bookingTime) => {
@@ -261,4 +264,4 @@ const sendConfirmationMail = async (bookingEmail, bookingDate, bookingDay, booki
     console.log(error.message);
   }
 };
-  
+   */

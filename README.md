@@ -17,7 +17,7 @@ BookingHandler acts as subscriber when recieving the booking infomation from the
 ## Get started:
 1. Clone the repository
 2. Go to terminal and install all dependancies using: `npm install`
-3. To run the component do: `cd src ` and `cd bookingAppointment`  then  ` node appointment.js`
+3. To run the component do: `cd src `  then  ` node app.js`
 
 ## Technologies:
 - Node.js

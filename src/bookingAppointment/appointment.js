@@ -1,26 +1,12 @@
 const Booking = require("../models/BookingModel");
+const bookingHandler = require("../bookingAppointment/bookingRequestHandler");
 const nodemailer = require("nodemailer");
 const { generateEmailTemplate } = require("../services/mails");
 var database = require('../Database/database');
 var mqtt = require('mqtt');
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, './.env') })
-
-/* var mongoose = require('mongoose');
-  // Variables
-var mongoURI = process.env.MONGODB_URI || 'mongodb+srv://Dentistimo:QsyJymgvpYZZeJPc@cluster0.hnkdpp5.mongodb.net/?retryWrites=true&w=majority';
-//var port = process.env.PORT || 3000;
-
-// Connect to MongoDB
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true }, function(err) {
-    if (err) {
-        console.error(`Failed to connect to MongoDB with URI: ${mongoURI}`);
-        console.error(err.stack);
-        process.exit(1);
-    }
-    console.log(`Connected to MongoDB with URI: ${mongoURI}`);
-}); */
-
+const topic = "booking/"
 
 const options = {
   host: '45fb8d87df7040eb8434cea2937cfb31.s1.eu.hivemq.cloud',
@@ -51,7 +37,108 @@ const circuitOptions = {
   resetTimeout: 30000 // After 30 seconds, try again.
 };
 
-bookingRequestHandler = function(topic, message) {
+client.subscribe('booking/newAppointment/request')
+client.subscribe('booking/getUserAppointments/request')
+client.subscribe('booking/deleteappointments/request')
+client.subscribe('booking/timeSlotAvailability/request')
+
+
+client.on('message', async function (topic, message) {
+
+  console.log("Received '" + message + "' on '" + topic + "'")
+
+  //getUserAppointments
+  if(topic === 'booking/getUserAppointments/request') {
+    const userDetails = JSON.parse(message);
+      let userid = userDetails.user;
+
+      Booking.find(
+        { user: userid },
+        function (err, appointments) {
+          if (err) {
+            return next(err);
+          }
+            let responseString = JSON.stringify(appointments);
+    
+            client.publish( "booking/getUserAppointments/response/found", responseString, { qos: 1, retain: false }, (error) => {
+                if (error) {
+                  console.error(error);
+                } else {
+                  console.log("sent the user appointmets to UI ")
+                }
+              });
+        } 
+          )
+
+    //deleteappointments
+  } else if(topic === 'booking/deleteappointments/request') {
+
+    const appointmentDetails = JSON.parse(message);
+    let appointmentid = appointmentDetails.appointment;
+    console.log("appointment: ", appointmentid);
+
+    Booking.findOneAndDelete(
+      { appointment: appointmentid },
+      function (err, appointment) {
+        if (err) {
+          return next(err);
+        }
+        let responseString = JSON.stringify(appointment);
+         console.log("this is the apointment to delete:" + responseString) 
+          client.publish( "booking/deleteappointments/response", { qos: 1, retain: false }, (error) => {
+              if (err) {
+                console.error(err);
+              } else {
+                console.log("appointment Deleted")
+              }
+            });
+          });
+            // Receive availability check request
+  } else if (topic === 'booking/timeSlotAvailability/request') {
+    const { date, start } = JSON.parse(message);
+        checkAppointmentAvailability(date, start, (err, availability) => {
+          if (err) {
+            console.error(err);
+          } else {
+            client.publish('booking/timeSlotAvailability/response', JSON.stringify({ available: availability }), { qos: 1, retain: false}, (error)=> {
+              if (error) {
+                console.error(error);
+              }
+            });
+          }
+        });
+        // newAppointment
+}  else if (topic === 'booking/newAppointment/request') {
+  const circuit = new CircuitBreaker(bookingHandler.bookingRequestHandler, circuitOptions);
+
+  circuit.fallback(() => 'fallback, ');
+  circuit.on('fallback', () => console.log('Sorry, out of service right now'));
+  
+  circuit.close(() => 'close, ');
+  circuit.on('close', () => console.log('Circuit Breaker Closed'));
+
+  circuit.open(() => 'open, ');
+  circuit.on('open', () => console.log('Circuit Breaker openned'));
+
+
+  circuit.fire(topic, message); //.then(console.log).catch(console.error);
+}
+})
+
+function checkAppointmentAvailability(date, start, callback) {
+  // Find all bookings at the given time
+  Booking.find({ start: start, date: date }, (err, bookings) => {
+    if (err) {
+      return callback(err);
+    }
+    // Return the availability result
+    callback(null, bookings.length === 0);
+  });
+} 
+
+//******************************************************************************************************** */
+
+/*  bookingRequestHandler = function(topic, message) {
 
   return new Promise((resolve, reject) => {
 
@@ -63,7 +150,6 @@ bookingRequestHandler = function(topic, message) {
     let numberOfDentists = bookingInfo.numberOfDentists;
     let numberOfAppointments = 0;
 
-    if(topic === 'booking/request') {
       const newBooking= new Booking({
       user: bookingInfo.user,
       day: bookingInfo.day,
@@ -90,10 +176,8 @@ bookingRequestHandler = function(topic, message) {
       }
 
     });
-    // console.log("Current Appointments  : ", numberOfAppointments);
 
     if (numberOfAppointments < numberOfDentists) {
-      //confirm the new booking
       console.log("This slot is available"); 
 
     newBooking.save(function (error, savedAppointment) {
@@ -112,11 +196,9 @@ bookingRequestHandler = function(topic, message) {
 
     let responseString = JSON.stringify(response);
 
-    client.publish( "booking/response/approved", responseString, { qos: 1, retain: false }, (error) => {
+    client.publish( "booking/newAppointment/response/approved", responseString, { qos: 1, retain: false }, (error) => {
         if (error) {
           console.error(error);
-     /*    } else {
-          console.log("New Appointment Confirmed ") */
         }
       });
     })
@@ -134,147 +216,18 @@ bookingRequestHandler = function(topic, message) {
 
       let responseString1 = JSON.stringify(response1);
 
-      client.publish("booking/response/notapproved", responseString1, { qos: 1, retain: false }, (error) => {
+      client.publish("booking/newAppointment/notapproved", responseString1, { qos: 1, retain: false }, (error) => {
           if (error) {
             console.error(error);
           } else {
             console.log("booking failed")
-            // console.log(responseString)
           }
         });
-
-        reject()
+      reject()
     }
-  }
-    )}
-
-  })  
-}
-
-
-
-
-  client.subscribe('booking/request', function () {
-    // When a message arrives, print it to the console
-    client.on('message', function (topic, message) {
-
-      const circuit = new CircuitBreaker(bookingRequestHandler, circuitOptions);
-
-      circuit.fire(topic, message).then(console.log).catch(console.error);
-
-
-      circuit.fallback(() => 'fallback, ');
-      circuit.on('fallback', () => console.log('Sorry, out of service right now'));
-      
-/*       circuit.timeout(() => 'timeOut, ');
-      circuit.on('timeout', () => console.log('Circuit Breaker timeout')); */ 
-      
-      circuit.close(() => 'close, ');
-      circuit.on('close', () => console.log('Circuit Breaker Closed'));
-
-      circuit.open(() => 'open, ');
-      circuit.on('open', () => console.log('Circuit Breaker openned'));
-
-     })
   })
-
-
-
-   client.subscribe('getUserAppointments/request', function () {
-    // When a message arrives, print it to the console
-    client.on('message', function (topic, message) {
-  
-      console.log("Received this lovely " + message + "  on " + topic + " yaay")
-      
-      const userDetails = JSON.parse(message);
-      let userid = userDetails.user;
-      // let requestid = userDetails.requestid;
-  
-      console.log("user: ", userid);
-  
-      if(topic === 'getUserAppointments/request') {
-      Booking.find(
-    { user: userid },
-    function (err, appointments) {
-      if (err) {
-        return next(err);
-      }
-        let responseString = JSON.stringify(appointments);
-        console.log(responseString)
-
-        client.publish( "getUserAppointments/response/found", responseString, { qos: 1, retain: false }, (error) => {
-            if (error) {
-              console.error(error);
-            } else {
-              console.log("sent the user appointmets to UI ")
-            }
-          });
-    } 
-      )}
-  })
-  })
-  client.subscribe('availability/deleteappointments', function () {
-    // When a message arrives, print it to the console
-    client.on('message', function (topic, message) {
-  
-      console.log("Received this lovely " + message + "  on " + topic + " yaay")
-      
-      const appointmentDetails = JSON.parse(message);
-      let appointmentid = appointmentDetails.appointment;
-      // let requestid = userDetails.requestid;
-  
-      console.log("appointment: ", appointmentid);
-  
-      if(topic === 'availability/deleteappointments') {
-      Booking.findOneAndDelete(
-    { appointment: appointmentid },
-    function (err, appointment) {
-      if (err) {
-        return next(err);
-      }
-      //  let responseString = JSON.stringify(appointment);
-      //   console.log(responseString) 
-        client.publish( "ui/deleteappointments")
-            if (err) {
-              console.error(err);
-            } else {
-              console.log("Delete appointment ")
-            }
-          });
-    } 
-      })
-    })
-
-
-    function checkAppointmentAvailability(date, start, callback) {
-      // Find all bookings at the given time
-      Booking.find({ start: start, date: date }, (err, bookings) => {
-        if (err) {
-          return callback(err);
-        }
-        // Return the availability result
-        callback(null, bookings.length === 0);
-      });
-    }
-    
-    client.subscribe('appointment/request', 'subscribed to appointment/request ')
-    // Receive availability check request
-    client.on('message', (topic, message) => {
-      if (topic === 'appointment/request') {
-        const { date, start } = JSON.parse(message);
-        checkAppointmentAvailability(date, start, (err, availability) => {
-          if (err) {
-            console.error(err);
-          } else {
-            client.publish('appointment/response', JSON.stringify({ available: availability }), { qos: 2, retain: false}, (error)=> {
-              if (error) {
-                console.error(error);
-              }
-            });
-          }
-        });
-      }
-    });
+})  
+} 
 
 // for sending email confirmation
 const sendConfirmationMail = async (bookingEmail, bookingDate, bookingDay, bookingTime) => {
@@ -311,4 +264,4 @@ const sendConfirmationMail = async (bookingEmail, bookingDate, bookingDay, booki
     console.log(error.message);
   }
 };
-  
+   */
